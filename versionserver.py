@@ -30,7 +30,7 @@ class main:
         elif name == 'list':
             return self.list()
         else:
-            return 'Hello, ' + name + '.'
+            return '<a href="https://github.com/salsita/versionserver">https://github.com/salsita/versionserver</a>'
 
     def get_project_id(self, conn, proj_name):
         c = conn.cursor()
