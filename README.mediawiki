@@ -6,12 +6,15 @@
 The purpose of the servlet is to provide auto-incremented build numbers for projects being built in Jenkins
 or other environments. It has a simple REST interface.
 
-== The interface ==
+== The Interface ==
 
 All functions are accessible as simple HTTP GET requests:
 
-* /generate?project=''projectName''&a=''verMajor''&b=''verMinor''&c=''verThirdNumber'' generates the build number
-for given project and first three version numbers and returns it and nothing else in the response
-* /addproject?project=''projectName'' adds a project to the database and returns its id and nothing else in the response
-* /delproject?project=''projectName'' deletes a project from the database
-* /list lists all projects along with max version number
+* /generate?project=''projectName''&a=''verMajor''&b=''verMinor''&c=''verThirdNumber''
+** generates the build number for given project and first three version numbers and returns it and nothing else in the response
+* /addproject?project=''projectName''
+** adds a project to the database and returns its id and nothing else in the response
+* /delproject?project=''projectName''
+** deletes a project from the database
+* /list
+** lists all projects along with max version number
