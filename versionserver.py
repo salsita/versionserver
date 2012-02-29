@@ -11,13 +11,13 @@ db_file = os.path.dirname(__file__) + '/db/data.db'
 first_build_number = 1
 
 get_last_build_sql = \
-'select lc.project_id, lc.ver_a, lc.ver_b, max(lc.ver_c) maxver_c, lc.ver_build from LastBuild lc join ' \
+'select p.name, lc.project_id, lc.ver_a, lc.ver_b, max(lc.ver_c) maxver_c, lc.ver_build from LastBuild lc join ' \
 '(select lb.project_id, lb.ver_a, max(lb.ver_b) maxver_b from LastBuild lb join ' \
 '(select project_id, max(ver_a) maxver_a from LastBuild) as a '\
 'on lb.ver_a = a.maxver_a and lb.project_id = a.project_id) as b ' \
 'on lc.ver_a = b.ver_a and lc.ver_b = b.maxver_b and lc.project_id = b.project_id ' \
-''\
-'order by lc.project_id desc'
+'join Project p on p.id = lc.project_id '\
+'order by p.name desc'
 
 class main:
     def GET(self, name):
@@ -95,5 +95,5 @@ class main:
         c.execute(get_last_build_sql)
         proj_infos = []
         for r in c:
-            proj_infos[len(proj_infos):] = str(r[0])
+            proj_infos[len(proj_infos):] = [r[0]+' '+str(r[2])+'.'+str(r[3])+'.'+str(r[4])]
         return proj_infos
