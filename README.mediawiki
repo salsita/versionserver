@@ -3,7 +3,7 @@
 == Description ==
 
 '''Version Server''' is a servlet written in python using web.py.
-The purpose of the servlet is to provide auto-incremented build numbers for projects being built in Jenkins
+The purpose of the servlet is to provide auto-incremented build numbers for projects being built on Jenkins
 or other environments. It has a simple REST interface.
 
 == The Interface ==
@@ -18,3 +18,7 @@ All functions are accessible as simple HTTP GET requests:
 ** deletes a project from the database
 * /list
 ** lists all projects along with max version number
+
+== Database ==
+
+The server uses a MySql database named ''versionserver''. The schema is described by DDL statements in the ''db/create.sql'' script.

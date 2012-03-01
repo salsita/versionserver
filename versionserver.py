@@ -1,14 +1,14 @@
 import os
 import web
-import sqlite3
 import re
+import MySQLdb as mdb
+import ConfigParser
 
 urls = (
 '/(.*)', 'main'
     )
 application = web.application(urls, globals()).wsgifunc()
 
-db_file = os.path.dirname(__file__) + '/db/data.db'
 first_build_number = 1
 
 get_last_build_sql =\
@@ -23,6 +23,9 @@ get_last_build_sql =\
 "on p.id = v.project_id "\
 "order by upper(p.name) asc"
 
+config = ConfigParser.ConfigParser()
+config.read(os.path.dirname(__file__) + '/versionserver.config')
+
 class main:
     def GET(self, name):
         if name == 'generate':
@@ -36,6 +39,11 @@ class main:
         else:
             return '<a href="https://github.com/salsita/versionserver">https://github.com/salsita/versionserver</a>'
 
+    def connect_to_db(self):
+        conn = mdb.connect('localhost', 'versionserver', config.get('db', 'pass'), 'versionserver')
+        conn.cursor().execute("SET sql_mode='PIPES_AS_CONCAT'")
+        return conn
+
     def get_project_id(self, conn, proj_name):
         c = conn.cursor()
         c.execute('select id from Project where name=?', [proj_name])
@@ -43,7 +51,7 @@ class main:
         return proj_id
 
     def generate_build_number(self, proj_name, ver_a, ver_b, ver_c):
-        conn = sqlite3.connect(db_file)
+        conn = self.connect_to_db()
         proj_id = self.get_project_id(conn, proj_name)
         c = conn.cursor()
         c.execute('begin immediate transaction')
@@ -78,7 +86,7 @@ class main:
 
     def add_project(self):
         user_input = web.input()
-        conn = sqlite3.connect(db_file)
+        conn = self.connect_to_db()
         c = conn.cursor()
         c.execute('insert into Project(name) values (?)', [user_input.project])
         proj_id = self.get_project_id(conn, user_input.project)
@@ -88,7 +96,7 @@ class main:
 
     def del_project(self):
         user_input = web.input()
-        conn = sqlite3.connect(db_file)
+        conn = self.connect_to_db()
         c = conn.cursor()
         c.execute('delete from Project where name=?', [user_input.project])
         conn.commit()
@@ -96,7 +104,7 @@ class main:
         return 'Deleted ' + user_input.project + '.'
 
     def list(self):
-        conn = sqlite3.connect(db_file)
+        conn = self.connect_to_db()
         c = conn.cursor()
         c.execute(get_last_build_sql)
         proj_info_table = '<table>'
