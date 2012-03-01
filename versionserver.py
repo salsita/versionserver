@@ -1,6 +1,7 @@
 import os
 import web
 import sqlite3
+import re
 
 urls = (
 '/(.*)', 'main'
@@ -66,9 +67,11 @@ class main:
 
     def generate(self):
         user_input = web.input()
-        ver_a = int(user_input.a)
-        ver_b = int(user_input.b)
-        ver_c = int(user_input.c)
+        ver_parse = re.compile('([0-9])+\\.([0-9])+\\.([0-9])+')
+        parsed = ver_parse.match(user_input.v)
+        ver_a = int(parsed.group(1))
+        ver_b = int(parsed.group(2))
+        ver_c = int(parsed.group(3))
         proj_name = user_input.project
         ver_build = self.generate_build_number(proj_name, ver_a, ver_b, ver_c)
         return str(ver_build)

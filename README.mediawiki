@@ -10,7 +10,7 @@ or other environments. It has a simple REST interface.
 
 All functions are accessible as simple HTTP GET requests:
 
-* /generate?project=''projectName''&a=''verMajor''&b=''verMinor''&c=''verThirdNumber''
+* /generate?project=''projectName''&v=''verMajor''.''verMinor''.''verThirdNumber''
 ** generates the build number for given project and first three version numbers and returns it and nothing else in the response
 * /addproject?project=''projectName''
 ** adds a project to the database and returns its id and nothing else in the response
