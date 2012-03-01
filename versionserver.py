@@ -46,7 +46,7 @@ class main:
 
     def get_project_id(self, conn, proj_name):
         c = conn.cursor()
-        c.execute('select id from Project where name=?', [proj_name])
+        c.execute('select id from Project where name=%s', [proj_name])
         proj_id = c.fetchone()[0]
         return proj_id
 
@@ -54,19 +54,18 @@ class main:
         conn = self.connect_to_db()
         proj_id = self.get_project_id(conn, proj_name)
         c = conn.cursor()
-        c.execute('begin immediate transaction')
         try:
-            c.execute('select ver_build from LastBuild where project_id=? and ver_a=? and ver_b=? and ver_c=?',
+            c.execute('select ver_build from LastBuild where project_id=%s and ver_a=%s and ver_b=%s and ver_c=%s for update',
                 [proj_id, ver_a, ver_b, ver_c])
             result_row = c.fetchone()
             if result_row is None:
-                c.execute('insert into LastBuild(project_id, ver_a, ver_b, ver_c, ver_build) values (?, ?, ?, ?, ?)',
+                c.execute('insert into LastBuild(project_id, ver_a, ver_b, ver_c, ver_build) values (%s, %s, %s, %s, %s)',
                     [proj_id, ver_a, ver_b, ver_c, first_build_number])
                 conn.commit()
                 return first_build_number
             else:
                 ver_build = result_row[0] + 1
-                c.execute('update LastBuild set ver_build=? where project_id=? and ver_a=? and ver_b=? and ver_c=?',
+                c.execute('update LastBuild set ver_build=%s where project_id=%s and ver_a=%s and ver_b=%s and ver_c=%s',
                     [ver_build, proj_id, ver_a, ver_b, ver_c])
                 conn.commit()
                 return ver_build
@@ -88,7 +87,7 @@ class main:
         user_input = web.input()
         conn = self.connect_to_db()
         c = conn.cursor()
-        c.execute('insert into Project(name) values (?)', [user_input.project])
+        c.execute('insert into Project(name) values (%s)', [user_input.project])
         proj_id = self.get_project_id(conn, user_input.project)
         conn.commit()
         conn.close()
@@ -98,7 +97,7 @@ class main:
         user_input = web.input()
         conn = self.connect_to_db()
         c = conn.cursor()
-        c.execute('delete from Project where name=?', [user_input.project])
+        c.execute('delete from Project where name=%s', [user_input.project])
         conn.commit()
         conn.close()
         return 'Deleted ' + user_input.project + '.'
