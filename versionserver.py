@@ -20,7 +20,7 @@ get_last_build_sql =\
 "on lc.ver_a = b.ver_a and lc.ver_b = b.maxver_b and lc.project_id = b.project_id group by lc.project_id "\
 ") v "\
 "on p.id = v.project_id "\
-"order by p.name desc"
+"order by upper(p.name) asc"
 
 class main:
     def GET(self, name):
