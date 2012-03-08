@@ -12,18 +12,19 @@ application = web.application(urls, globals()).wsgifunc()
 first_build_number = 1
 
 get_last_build_sql = """
-select p.name, p.id, coalesce(v.ver_a || '.' || v.ver_b || '.' || v.maxver_c || '.' || bn.ver_build, 'no build yet') ver
-from
+select p.name, p.id,
+coalesce(v.maxver_a || '.' || v.maxver_b || '.' || v.maxver_c || '.' || bn.ver_build, 'no build yet') ver from
 Project p left outer join
-(select lc.project_id, lc.ver_a, lc.ver_b, max(lc.ver_c) maxver_c from LastBuild lc join
-(select lb.project_id, lb.ver_a, max(lb.ver_b) maxver_b from LastBuild lb join
+(select lc.project_id, b.maxver_a, b.maxver_b, max(lc.ver_c) maxver_c from LastBuild lc join
+(select lb.project_id, a.maxver_a, max(lb.ver_b) maxver_b from LastBuild lb join
 (select project_id, max(ver_a) maxver_a from LastBuild group by project_id) as a
-on lb.ver_a = a.maxver_a and lb.project_id = a.project_id group by lb.project_id) as b
-on lc.ver_a = b.ver_a and lc.ver_b = b.maxver_b and lc.project_id = b.project_id group by lc.project_id
+on lb.ver_a = a.maxver_a and lb.project_id = a.project_id group by lb.project_id, a.maxver_a) b
+on lc.ver_a = b.maxver_a and lc.ver_b = b.maxver_b and lc.project_id = b.project_id
+ group by lc.project_id, b.maxver_a, b.maxver_b
 ) v
 on p.id = v.project_id
 left outer join LastBuild bn
-on (v.project_id, v.ver_a, v.ver_b, v.maxver_c) = (bn.project_id, bn.ver_a, bn.ver_b, bn.ver_c)
+on v.project_id=bn.project_id and v.maxver_a=bn.ver_a and v.maxver_b=bn.ver_b and v.maxver_c=bn.ver_c
 order by upper(p.name) asc
 """
 
