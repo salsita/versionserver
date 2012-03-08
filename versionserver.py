@@ -53,22 +53,15 @@ class main:
     def generate_build_number(self, proj_name, ver_a, ver_b, ver_c):
         conn = self.connect_to_db()
         proj_id = self.get_project_id(conn, proj_name)
+        conn.autocommit(True)
         c = conn.cursor()
         try:
-            c.execute('select ver_build from LastBuild where project_id=%s and ver_a=%s and ver_b=%s and ver_c=%s for update',
-                [proj_id, ver_a, ver_b, ver_c])
-            result_row = c.fetchone()
-            if result_row is None:
-                c.execute('insert into LastBuild(project_id, ver_a, ver_b, ver_c, ver_build) values (%s, %s, %s, %s, %s)',
-                    [proj_id, ver_a, ver_b, ver_c, first_build_number])
-                conn.commit()
-                return first_build_number
-            else:
-                ver_build = result_row[0] + 1
-                c.execute('update LastBuild set ver_build=%s where project_id=%s and ver_a=%s and ver_b=%s and ver_c=%s',
-                    [ver_build, proj_id, ver_a, ver_b, ver_c])
-                conn.commit()
-                return ver_build
+            c.execute("""insert into LastBuild(project_id, ver_a, ver_b, ver_c, ver_build)
+                        values (%s, %s, %s, %s, last_insert_id(%s))
+                        on duplicate key update ver_build=last_insert_id(ver_build + 1)""",
+                        [proj_id, ver_a, ver_b, ver_c, first_build_number])
+            c.execute('select last_insert_id()')
+            return c.fetchone()[0]
         finally:
             conn.close()
 
