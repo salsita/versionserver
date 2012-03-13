@@ -72,7 +72,7 @@ class main:
 
     def generate(self):
         user_input = web.input()
-        ver_parse = re.compile('([0-9])+\\.([0-9])+\\.([0-9])+')
+        ver_parse = re.compile('([0-9]+)\\.([0-9]+)\\.([0-9]+)')
         parsed = ver_parse.match(user_input.v)
         ver_a = int(parsed.group(1))
         ver_b = int(parsed.group(2))
