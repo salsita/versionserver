@@ -21,7 +21,7 @@ create table BuildInfo (
   ver_c int not null,
   ver_build int not null,
 
-  time%u TIMESTAMP null,
+  build_time_utc TIMESTAMP null,
 -- version control identity - identifies the changeset this build was made from, 128 chars is more than enough
 -- hg identity or git rev-parse HEAD
   vc_identity varchar(128) null,

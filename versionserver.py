@@ -28,6 +28,15 @@ on v.project_id=bn.project_id and v.maxver_a=bn.ver_a and v.maxver_b=bn.ver_b an
 order by upper(p.name) asc
 """
 
+get_build_list_sql = """
+select bi.ver_a || '.' || bi.ver_b || '.' || bi.ver_c || '.' || bi.ver_build version,
+bi.build_time_utc || ' UTC' build_time_utc_s,
+bi.vc_identity
+from Project p join BuildInfo bi on p.id=bi.project_id
+where p.name=%s
+order by bi.ver_a, bi.ver_b, bi.ver_c, bi.ver_build
+"""
+
 config = ConfigParser.ConfigParser()
 config.read(os.path.dirname(__file__) + '/versionserver.config')
 
@@ -114,12 +123,37 @@ class main:
         return 'Deleted ' + user_input.project + '.'
 
     def list(self):
+        user_input = web.input(project=None)
+        if user_input.project:
+            return self.list_project(user_input.project)
+        else:
+            return self.list_latest()
+
+    def list_project(self, proj_name):
+        conn = self.connect_to_db()
+        c = conn.cursor()
+        c.execute(get_build_list_sql, [proj_name])
+        proj_info_table = '<table>'
+        proj_info_table += '<tr><th>Version</th><th>Build time</th><th>Changeset identity</th></tr>'
+        for r in c:
+            proj_info_table += '<tr>'
+            for rr in r:
+                proj_info_table = proj_info_table + '<td>' + str(rr) + '</td>'
+            proj_info_table += '</tr>'
+
+        proj_info_table += '</table>'
+        return proj_info_table
+
+    def list_project_anchor(self, proj_name):
+        return '<a href="list?project=' + proj_name + '">' + proj_name + '</a>'
+
+    def list_latest(self):
         conn = self.connect_to_db()
         c = conn.cursor()
         c.execute(get_last_build_sql)
         proj_info_table = '<table>'
         for r in c:
-            proj_info_table = proj_info_table + '<tr><td>' + r[0] + '</td><td>' + r[2] + '</td></tr>'
+            proj_info_table = proj_info_table + '<tr><td>' + self.list_project_anchor(r[0]) + '</td><td>' + r[2] + '</td></tr>'
 
         proj_info_table += '</table>'
         return proj_info_table
