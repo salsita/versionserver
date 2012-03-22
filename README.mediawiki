@@ -34,7 +34,6 @@ This table allows easy build number generation using one simple UPSERT operation
 than having a table with all the build numbers and just inserting into it.
 
 === BuildInfo table ===
-'''TBI'''
 The '''BuildInfo''' table contains additional information about a particular build. The build number is first generated
 using UPSERT operation on the '''LastBuild''' table and then used as part of project id, full version tuple
 to insert an entry into the '''BuildInfo''' table.

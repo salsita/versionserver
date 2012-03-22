@@ -55,31 +55,44 @@ class main:
         proj_id = c.fetchone()[0]
         return proj_id
 
-    def generate_build_number(self, proj_name, ver_a, ver_b, ver_c):
-        conn = self.connect_to_db()
-        proj_id = self.get_project_id(conn, proj_name)
-        conn.autocommit(True)
+    def generate_build_number(self, conn, proj_id, ver_a, ver_b, ver_c):
         c = conn.cursor()
-        try:
-            c.execute("""insert into LastBuild(project_id, ver_a, ver_b, ver_c, ver_build)
-                        values (%s, %s, %s, %s, last_insert_id(%s))
-                        on duplicate key update ver_build=last_insert_id(ver_build + 1)""",
-                        [proj_id, ver_a, ver_b, ver_c, first_build_number])
-            c.execute('select last_insert_id()')
-            return c.fetchone()[0]
-        finally:
-            conn.close()
+        c.execute("""insert into LastBuild(project_id, ver_a, ver_b, ver_c, ver_build)
+                    values (%s, %s, %s, %s, last_insert_id(%s))
+                    on duplicate key update ver_build=last_insert_id(ver_build + 1)""",
+                    [proj_id, ver_a, ver_b, ver_c, first_build_number])
+        c.execute('select last_insert_id()')
+        build_number = c.fetchone()[0]
+        c.execute("""insert into BuildInfo(project_id, ver_a, ver_b, ver_c, ver_build, build_time_utc)
+                    values (%s, %s, %s, %s, %s, UTC_TIMESTAMP)""",
+                    [proj_id, ver_a, ver_b, ver_c, build_number])
+        return build_number
+
+    def updateBuildInfo(self, conn, proj_id, ver_a, ver_b, ver_c, ver_build, vc_identity):
+        v_condition = 'where project_id=%s and ver_a=%s and ver_b=%s and ver_c=%s and ver_build=%s'
+        c = conn.cursor()
+        if vc_identity:
+            c.execute('update BuildInfo set vc_identity=%s ' + v_condition,
+                [vc_identity, proj_id, ver_a, ver_b, ver_c, ver_build])
 
     def generate(self):
-        user_input = web.input()
+        user_input = web.input(vcid=None)
         ver_parse = re.compile('([0-9]+)\\.([0-9]+)\\.([0-9]+)')
         parsed = ver_parse.match(user_input.v)
         ver_a = int(parsed.group(1))
         ver_b = int(parsed.group(2))
         ver_c = int(parsed.group(3))
         proj_name = user_input.project
-        ver_build = self.generate_build_number(proj_name, ver_a, ver_b, ver_c)
-        return str(ver_build)
+
+        conn = self.connect_to_db()
+        conn.autocommit(True)
+        try:
+            proj_id = self.get_project_id(conn, proj_name)
+            ver_build = self.generate_build_number(conn, proj_id, ver_a, ver_b, ver_c)
+            self.updateBuildInfo(conn, proj_id, ver_a, ver_b, ver_c, ver_build, user_input.vcid)
+            return str(ver_build)
+        finally:
+            conn.close()
 
     def add_project(self):
         user_input = web.input()
