@@ -5,13 +5,15 @@
 '''Version Server''' is a servlet written in python using web.py.
 The purpose of the servlet is to provide auto-incremented build numbers for projects being built on Jenkins
 or other environments. It has a simple REST interface.
+You can also tell the server to store the identity of the changeset from which you are building.
 
 == The Interface ==
 
 All functions are accessible as simple HTTP GET requests:
 
-* /generate?project=''projectName''&v=''verMajor''.''verMinor''.''verThirdNumber''
+* /generate?project=''projectName''&v=''verMajor''.''verMinor''.''verThirdNumber''&vcid=''changesetId''
 ** generates the build number for given project and first three version numbers and returns it and nothing else in the response
+** the ''vcid'' parameter is optional
 * /addproject?project=''projectName''
 ** adds a project to the database and returns its id and nothing else in the response
 * /delproject?project=''projectName''
