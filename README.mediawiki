@@ -21,4 +21,21 @@ All functions are accessible as simple HTTP GET requests:
 
 == Database ==
 
-The server uses a MySql database named ''versionserver''. The schema is described by DDL statements in the ''db/create.sql'' script.
+The server uses a MySql database named ''versionserver''.
+The schema is described by DDL statements in the ''db/create.sql'' script.
+
+=== Project table ===
+The '''Project''' table contains list of all known projects. Each project has an integer primary identifier
+and an unique name.
+
+=== LastBuild table ===
+The '''LastBuild''' table contains last build number for project id and triplet of major, minor and release number.
+This table allows easy build number generation using one simple UPSERT operation, which is easier
+than having a table with all the build numbers and just inserting into it.
+
+=== BuildInfo table ===
+'''TBI'''
+The '''BuildInfo''' table contains additional information about a particular build. The build number is first generated
+using UPSERT operation on the '''LastBuild''' table and then used as part of project id, full version tuple
+to insert an entry into the '''BuildInfo''' table.
+
