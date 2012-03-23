@@ -34,7 +34,7 @@ bi.build_time_utc || ' UTC' build_time_utc_s,
 bi.vc_identity
 from Project p join BuildInfo bi on p.id=bi.project_id
 where p.name=%s
-order by bi.ver_a, bi.ver_b, bi.ver_c, bi.ver_build
+order by bi.ver_a desc, bi.ver_b desc, bi.ver_c desc, bi.ver_build desc
 """
 
 config = ConfigParser.ConfigParser()
