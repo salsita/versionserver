@@ -20,6 +20,8 @@ All functions are accessible as simple HTTP GET requests:
 ** deletes a project from the database
 * /list
 ** lists all projects along with max version number
+* /list?project=''projectName''
+** lists build for given project including UTC timestamp of the build and vc changeset id if it has been stored
 
 == Database ==
 
