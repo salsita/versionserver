@@ -11,9 +11,10 @@ You can also tell the server to store the identity of the changeset from which y
 
 All functions are accessible as simple HTTP GET requests:
 
-* /generate?project=''projectName''&v=''verMajor''.''verMinor''.''verThirdNumber''&vcid=''changesetId''
+* /generate?project=''projectName''&v=''verMajor''.''verMinor''.''verThirdNumber''&vcid=''changesetId''&buildTweaks=''specialDefines''
 ** generates the build number for given project and first three version numbers and returns it and nothing else in the response
 ** the ''vcid'' parameter is optional
+** the ''buildTweaks'' is optional and can contain special parameters which were used to modify the build, such as CMake defines
 * /addproject?project=''projectName''
 ** adds a project to the database and returns its id and nothing else in the response
 * /delproject?project=''projectName''

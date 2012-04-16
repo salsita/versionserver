@@ -26,6 +26,10 @@ create table BuildInfo (
 -- hg identity or git rev-parse HEAD
   vc_identity varchar(128) null,
 
+-- possible tweaks used to alter the build such as cmake -D defines
+
+  build_tweaks varchar(256) null,
+
   primary key(project_id, ver_a, ver_b, ver_c, ver_build),
   foreign key(project_id) references Project(id)
 );

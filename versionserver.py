@@ -31,7 +31,7 @@ order by upper(p.name) asc
 get_build_list_sql = """
 select bi.ver_a || '.' || bi.ver_b || '.' || bi.ver_c || '.' || bi.ver_build version,
 bi.build_time_utc || ' UTC' build_time_utc_s,
-bi.vc_identity
+bi.vc_identity, bi.build_tweaks
 from Project p join BuildInfo bi on p.id=bi.project_id
 where p.name=%s
 order by bi.ver_a desc, bi.ver_b desc, bi.ver_c desc, bi.ver_build desc
@@ -77,15 +77,19 @@ class main:
                     [proj_id, ver_a, ver_b, ver_c, build_number])
         return build_number
 
-    def updateBuildInfo(self, conn, proj_id, ver_a, ver_b, ver_c, ver_build, vc_identity):
+    def updateBuildInfo(self, conn, proj_id, ver_a, ver_b, ver_c, ver_build, vc_identity, build_tweaks):
         v_condition = 'where project_id=%s and ver_a=%s and ver_b=%s and ver_c=%s and ver_build=%s'
         c = conn.cursor()
         if vc_identity:
             c.execute('update BuildInfo set vc_identity=%s ' + v_condition,
                 [vc_identity, proj_id, ver_a, ver_b, ver_c, ver_build])
 
+        if build_tweaks:
+            c.execute('update BuildInfo set build_tweaks=%s ' + v_condition,
+                [build_tweaks, proj_id, ver_a, ver_b, ver_c, ver_build])
+
     def generate(self):
-        user_input = web.input(vcid=None)
+        user_input = web.input(vcid=None, buildTweaks=None)
         ver_parse = re.compile('([0-9]+)\\.([0-9]+)\\.([0-9]+)')
         parsed = ver_parse.match(user_input.v)
         ver_a = int(parsed.group(1))
@@ -98,7 +102,7 @@ class main:
         try:
             proj_id = self.get_project_id(conn, proj_name)
             ver_build = self.generate_build_number(conn, proj_id, ver_a, ver_b, ver_c)
-            self.updateBuildInfo(conn, proj_id, ver_a, ver_b, ver_c, ver_build, user_input.vcid)
+            self.updateBuildInfo(conn, proj_id, ver_a, ver_b, ver_c, ver_build, user_input.vcid, user_input.buildTweaks)
             return str(ver_build)
         finally:
             conn.close()
@@ -134,7 +138,7 @@ class main:
         c = conn.cursor()
         c.execute(get_build_list_sql, [proj_name])
         proj_info_table = '<table>'
-        proj_info_table += '<tr><th>Version</th><th>Build time</th><th>Changeset identity</th></tr>'
+        proj_info_table += '<tr><th>Version</th><th>Build time</th><th>Changeset identity</th><th>Build tweaks</th></tr>'
         for r in c:
             proj_info_table += '<tr>'
             for rr in r:
